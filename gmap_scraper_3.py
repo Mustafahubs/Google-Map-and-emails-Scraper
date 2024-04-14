@@ -177,8 +177,7 @@ class GoogleMapScraper(Email_Extractor_App):
                 already_done_keywords = self.read_already_done_keywords()
                 if keyword[0] not in already_done_keywords:
                     keywords = '+'.join(keyword[0].split(' ')).lower().strip()
-                    query_url = f'https://www.bing.com/maps/search/{keywords}'
-                    # query_url = f'https://www.google.com/maps/search/{keywords}'
+                    query_url = f'https://www.google.com/maps/search/{keywords}'
                     driver.get(query_url)
                     self.scroll_down_page(driver)
                     self.write_already_done_keywords(keyword[0])
