@@ -36,6 +36,8 @@ class PopularDefs:
                 subprocess.Popen(["start", "chrome", "--remote-debugging-port=8989",
                                  "--user-data-dir=" + os.getcwd() + "/Chrome",], shell=True)
         options = ChOptions()
+        options.add_argument('--ignore-certificate-errors')
+        options.add_argument('--acceptInsecureCerts=true') 
         options.add_argument("--start-maximized")
         options.add_argument("--profile-directory=Default")
         options.add_experimental_option("debuggerAddress", "localhost:8989")

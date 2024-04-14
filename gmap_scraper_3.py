@@ -14,6 +14,7 @@ class GoogleMapScraper(Email_Extractor_App):
     def __init__(self):
         self.input_file = 'Search_Keywords.csv'
         self.output_file = 'google_map_results.csv'
+        self.already_done_keywords = 'already_done_keywords.txt'
     
     def read_input_file(self):
         with open(self.input_file,'r') as f:
@@ -154,18 +155,35 @@ class GoogleMapScraper(Email_Extractor_App):
                 last_item_to_scroll = last_item
                 print('Scrolling...')
     
+    def read_already_done_keywords(self):
+        with open(self.already_done_keywords,'r',encoding='utf-8') as f:
+            reader = f.readlines()
+            already_scraped_keyword = [row.strip() for row in reader]
+        return already_scraped_keyword
+    
+    def write_already_done_keywords(self,keyword):
+        with open(self.already_done_keywords,'a',encoding='utf-8') as f:
+            f.write(keyword + '\n')
+    
 
     def run(self):
         if self.input_file in os.listdir():
-            self.csv_header()
+            if self.output_file not in os.listdir(): self.csv_header()
+            if self.already_done_keywords not in os.listdir(): open(self.already_done_keywords,'w').close()
             driver = self.open_browser()
             self.open_required_tab(driver)
             keywords_list = self.read_input_file()
             for keyword in keywords_list:
-                keywords = '+'.join(keyword[0].split(' ')).lower().strip()
-                query_url = f'https://www.google.com/maps/search/{keywords}'
-                driver.get(query_url)
-                self.scroll_down_page(driver)
+                already_done_keywords = self.read_already_done_keywords()
+                if keyword[0] not in already_done_keywords:
+                    keywords = '+'.join(keyword[0].split(' ')).lower().strip()
+                    query_url = f'https://www.bing.com/maps/search/{keywords}'
+                    # query_url = f'https://www.google.com/maps/search/{keywords}'
+                    driver.get(query_url)
+                    self.scroll_down_page(driver)
+                    self.write_already_done_keywords(keyword[0])
+                else:
+                    print(f'[Skipped] - Already done keyword: {keyword[0]}')
         else:
             print(f'File {self.input_file} not found!')
 

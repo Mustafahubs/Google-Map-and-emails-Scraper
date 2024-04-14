@@ -80,17 +80,12 @@ class Email_Extractor_App():
                         time.sleep(.5)
                         print(f'[INFO] - Found Emails: {emails_2} , URL: {url}')
                         return emails_2
-                        # row_1 = [url] + emails_2
-                        # self.save_data(row_1)
-                        # break
                     else:
                         print(f'[INFO] No emails found for URL: {url}')
                         return []
-                        # self.write_no_emails(url)
             else:
                 print(f'[INFO] No emails found for URL: {url}')
                 return []
-                # self.write_no_emails(url)
         else:
             clear_history_btn = driver.find_elements('xpath','//button[text()="Clear"]')
             if clear_history_btn: clear_history_btn[0].click()
@@ -99,9 +94,6 @@ class Email_Extractor_App():
             time.sleep(.5)
             print(f'[INFO] - Found Emails: {emails[0]} , URL: {url}')
             return emails
-            # row = [url] + emails
-        #     self.save_data(row)
-        # self.write_already_done(url)
 
     
     def save_data(self,row):
