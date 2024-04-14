@@ -43,7 +43,7 @@ class GoogleMapScraper(Email_Extractor_App):
             driver.get(item_url)
             time.sleep(2)
             name_tag = pd.webAction(xpath=name_xpath,listElements=True)
-            name = name_tag[0].text if name_tag else ''
+            name = name_tag[0].get_attribute('textContent').strip() if name_tag else ''
 
             address_tag = pd.webAction(xpath=address_xpath,listElements=True)
             address = address_tag[0].get_attribute('aria-label') if address_tag else ''
@@ -57,10 +57,10 @@ class GoogleMapScraper(Email_Extractor_App):
                 phone = ''
 
             review_tag = pd.webAction(xpath=reviews_xpath,listElements=True)
-            reviews = review_tag[0].text if review_tag else ''
+            reviews = review_tag[0].get_attribute('textContent').strip() if review_tag else ''
 
             ratting_tag = pd.webAction(xpath=ratings_xpath,listElements=True)
-            ratting = ratting_tag[0].text if ratting_tag else ''
+            ratting = ratting_tag[0].get_attribute('textContent').strip() if ratting_tag else ''
 
             images_tag = pd.webAction(xpath=images_xpath,listElements=True)
             image = images_tag[0].get_attribute('src') if images_tag else ''
@@ -70,7 +70,7 @@ class GoogleMapScraper(Email_Extractor_App):
             website = website_text.split(':')[-1].strip()
 
             category_tag = pd.webAction(xpath=category_xpath,listElements=True)
-            category = category_tag[0].text if category_tag else ''
+            category = category_tag[0].get_attribute('textContent').strip() if category_tag else ''
 
             description_tag = driver.find_elements(By.XPATH, description_xpath)
             if description_tag:
