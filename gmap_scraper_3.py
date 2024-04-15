@@ -8,6 +8,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from email_scrapper import Email_Extractor_App
+from selenium.common.exceptions import TimeoutException, WebDriverException
 
 
 class GoogleMapScraper(Email_Extractor_App):
@@ -37,86 +38,93 @@ class GoogleMapScraper(Email_Extractor_App):
         driver.switch_to.window(driver.window_handles[0])
 
     
-    def extract_and_save(self,driver,items_url):
+    def extract_and_save(self,driver,items_url,search_query):
         driver.switch_to.window(driver.window_handles[-1])
         for item_url in items_url:
-            driver.get(item_url)
-            time.sleep(2)
-            name_tag = pd.webAction(xpath=name_xpath,listElements=True)
-            name = name_tag[0].get_attribute('textContent').strip() if name_tag else ''
+            try:
+                driver.get(item_url)
+                time.sleep(2)
+            except (TimeoutException, WebDriverException):
+                print('Timeout or WebDriver error occurred! Skipping...')
+                continue
+            try:
+                name_tag = pd.webAction(xpath=name_xpath,listElements=True)
+                name = name_tag[0].get_attribute('textContent').strip() if name_tag else ''
 
-            address_tag = pd.webAction(xpath=address_xpath,listElements=True)
-            address = address_tag[0].get_attribute('aria-label') if address_tag else ''
+                address_tag = pd.webAction(xpath=address_xpath,listElements=True)
+                address = address_tag[0].get_attribute('aria-label') if address_tag else ''
 
-            phone_tag = pd.webAction(xpath=phone_xpath,listElements=True)
-            if phone_tag:
-                phone_tag[0].location_once_scrolled_into_view
-                phone_text = phone_tag[0].get_attribute('aria-label')
-                phone = phone_text.split(':')[-1].strip()
-            else:
-                phone = ''
+                phone_tag = pd.webAction(xpath=phone_xpath,listElements=True)
+                if phone_tag:
+                    phone_tag[0].location_once_scrolled_into_view
+                    phone_text = phone_tag[0].get_attribute('aria-label')
+                    phone = phone_text.split(':')[-1].strip()
+                else:
+                    phone = ''
 
-            review_tag = pd.webAction(xpath=reviews_xpath,listElements=True)
-            reviews = review_tag[0].get_attribute('textContent').strip() if review_tag else ''
+                review_tag = pd.webAction(xpath=reviews_xpath,listElements=True)
+                reviews = review_tag[0].get_attribute('textContent').strip() if review_tag else ''
 
-            ratting_tag = pd.webAction(xpath=ratings_xpath,listElements=True)
-            ratting = ratting_tag[0].get_attribute('textContent').strip() if ratting_tag else ''
+                ratting_tag = pd.webAction(xpath=ratings_xpath,listElements=True)
+                ratting = ratting_tag[0].get_attribute('textContent').strip() if ratting_tag else ''
 
-            images_tag = pd.webAction(xpath=images_xpath,listElements=True)
-            image = images_tag[0].get_attribute('src') if images_tag else ''
+                images_tag = pd.webAction(xpath=images_xpath,listElements=True)
+                image = images_tag[0].get_attribute('src') if images_tag else ''
 
-            website_tag = pd.webAction(xpath=website_xpath,listElements=True)
-            website_text = website_tag[0].get_attribute('aria-label') if website_tag else ''
-            website = website_text.split(':')[-1].strip()
+                website_tag = pd.webAction(xpath=website_xpath,listElements=True)
+                website_text = website_tag[0].get_attribute('aria-label') if website_tag else ''
+                website = website_text.split(':')[-1].strip()
 
-            category_tag = pd.webAction(xpath=category_xpath,listElements=True)
-            category = category_tag[0].get_attribute('textContent').strip() if category_tag else ''
+                category_tag = pd.webAction(xpath=category_xpath,listElements=True)
+                category = category_tag[0].get_attribute('textContent').strip() if category_tag else ''
 
-            description_tag = driver.find_elements(By.XPATH, description_xpath)
-            if description_tag:
-                desc_tags = description_tag[0].find_elements(By.XPATH, './/div[contains(@jslog,"metadata:")]')
-                description = desc_tags[0].text if len(desc_tags) == 2 else ''
-                others_tag = description_tag[0].find_elements(By.XPATH, './/div[contains(@jslog,"metadata:")]/div/parent::div')
-                other_text = others_tag[0].text.split('\n') if others_tag else ''
-                # whole_text = description_tag[0].text
-                # end_index = whole_text.find('\n')
-                # description = whole_text[:end_index]
-                # other_text = whole_text[end_index:].split('\n')
+                description_tag = driver.find_elements(By.XPATH, description_xpath)
+                if description_tag:
+                    desc_tags = description_tag[0].find_elements(By.XPATH, './/div[contains(@jslog,"metadata:")]')
+                    description = desc_tags[0].text if len(desc_tags) == 2 else ''
+                    others_tag = description_tag[0].find_elements(By.XPATH, './/div[contains(@jslog,"metadata:")]/div/parent::div')
+                    other_text = others_tag[0].text.split('\n') if others_tag else ''
+                    # whole_text = description_tag[0].text
+                    # end_index = whole_text.find('\n')
+                    # description = whole_text[:end_index]
+                    # other_text = whole_text[end_index:].split('\n')
 
-                others_items = [item for item in other_text if any(char.isalpha() for char in item)]
-                others = ', '.join(others_items)
-            else:
-                description, others = '',''
-            
-            time_btn = pd.webAction(xpath=time_btn_xpath,listElements=True)
-            if time_btn:
-                try: time_btn[0].click()
-                except:driver.execute_script("arguments[0].click();", time_btn[0])
-                time_element = pd.webAction(xpath=time_xpath,listElements=True)
-                if time_element:
-                    time_tag_list = time_element[0].get_attribute('aria-label').replace('\u202f','').replace('. Hide open hours for the week','').split(';')
+                    others_items = [item for item in other_text if any(char.isalpha() for char in item)]
+                    others = ', '.join(others_items)
+                else:
+                    description, others = '',''
+                
+                time_btn = pd.webAction(xpath=time_btn_xpath,listElements=True)
+                if time_btn:
+                    try: time_btn[0].click()
+                    except:driver.execute_script("arguments[0].click();", time_btn[0])
+                    time_element = pd.webAction(xpath=time_xpath,listElements=True)
+                    if time_element:
+                        time_tag_list = time_element[0].get_attribute('aria-label').replace('\u202f','').replace('. Hide open hours for the week','').split(';')
+                    else:
+                        time_tag_list = []
                 else:
                     time_tag_list = []
-            else:
-                time_tag_list = []
-                
-            day_values = {'Friday': '','Saturday': '','Sunday': '','Monday': '','Tuesday': '','Wednesday': '','Thursday': ''}
-            for day in time_tag_list:
-                for key in day_values.keys():
-                    if key in day:
-                        day_values[key] = day.split(',')[-1].strip().lower()
-                        break
-                        # day_values[key] = day.split(',')[-1].split('to')[0].strip()
-                        
-            Friday, Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday = day_values.values()
-            if website: emails = self.extract_data(driver,website)
-            else: emails = []
-            print(name, phone)
-            row = [name, address, phone, reviews,ratting, category, image, website, Friday, Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday, description,others,item_url] + emails
-            self.save_to_csv(row)
-            self.items_so_far += 1
-            time.sleep(2)
-        
+                    
+                day_values = {'Friday': '','Saturday': '','Sunday': '','Monday': '','Tuesday': '','Wednesday': '','Thursday': ''}
+                for day in time_tag_list:
+                    for key in day_values.keys():
+                        if key in day:
+                            day_values[key] = day.split(',')[-1].strip().lower()
+                            break
+                            # day_values[key] = day.split(',')[-1].split('to')[0].strip()
+                            
+                Friday, Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday = day_values.values()
+                if website: emails = self.extract_data(driver,website)
+                else: emails = []
+                print(name, phone)
+                row = [name, address, phone, reviews,ratting, category, image, website, Friday, Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday, description,others,item_url] + emails
+                self.save_to_csv(row)
+                self.items_so_far += 1
+                time.sleep(2)
+            except Exception as e:
+                continue
+            
         driver.switch_to.window(driver.window_handles[0])
 
     def save_to_csv(self,row):
@@ -127,9 +135,9 @@ class GoogleMapScraper(Email_Extractor_App):
     def csv_header(self):
         with open(self.output_file, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Name', 'Address', 'Phone', 'Reviews', 'Ratting', 'Category', 'Image', 'Website', 'Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday','Description','Others','Company-Link','Emails'])    
+            writer.writerow(['Name', 'Address', 'Phone', 'Reviews', 'Ratting', 'Category', 'Image', 'Website', 'Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday','Description','Others','Company-Link','Emails', 'Search Query'])    
 
-    def scroll_down_page(self,driver):
+    def scroll_down_page(self,driver,search_query):
         last_item_to_scroll = None
         self.items_so_far = 0
         while True:
@@ -137,7 +145,7 @@ class GoogleMapScraper(Email_Extractor_App):
             new_items = items[self.items_so_far:]
             if len(new_items) > 0:
                 items_url = [item.get_attribute('href') for item in new_items]
-                self.extract_and_save(driver,items_url)
+                self.extract_and_save(driver,items_url,search_query)
                 last_item = items[-1]
             else: break
 
@@ -179,7 +187,7 @@ class GoogleMapScraper(Email_Extractor_App):
                     keywords = '+'.join(keyword[0].split(' ')).lower().strip()
                     query_url = f'https://www.google.com/maps/search/{keywords}'
                     driver.get(query_url)
-                    self.scroll_down_page(driver)
+                    self.scroll_down_page(driver,keyword[0])
                     self.write_already_done_keywords(keyword[0])
                 else:
                     print(f'[Skipped] - Already done keyword: {keyword[0]}')
