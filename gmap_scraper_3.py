@@ -118,7 +118,7 @@ class GoogleMapScraper(Email_Extractor_App):
                 if website: emails = self.extract_data(driver,website)
                 else: emails = []
                 print(name, phone)
-                row = [name, address, phone, reviews,ratting, category, image, website, Friday, Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday, description,others,item_url] + emails
+                row = [name, address, phone, reviews,ratting, category, image, website, Friday, Saturday, Sunday, Monday, Tuesday, Wednesday, Thursday, description,others,item_url,search_query] + emails
                 self.save_to_csv(row)
                 self.items_so_far += 1
                 time.sleep(2)
@@ -135,7 +135,7 @@ class GoogleMapScraper(Email_Extractor_App):
     def csv_header(self):
         with open(self.output_file, 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerow(['Name', 'Address', 'Phone', 'Reviews', 'Ratting', 'Category', 'Image', 'Website', 'Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday','Description','Others','Company-Link','Emails', 'Search Query'])    
+            writer.writerow(['Name', 'Address', 'Phone', 'Reviews', 'Ratting', 'Category', 'Image', 'Website', 'Friday', 'Saturday', 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday','Description','Others','Company-Link', 'Search Query','Emails'])    
 
     def scroll_down_page(self,driver,search_query):
         last_item_to_scroll = None
